@@ -5,7 +5,7 @@ Written in Rust. Maps out every tram operating live in Manchester using the TFGM
 ## Concept/Theory
 Every tram station provides information on what trams will arrive within a specified time. Given such information, and also the knowledge that a tram has actually stopped at the station, we can derive exactly where and when every tram is located on the Metrolink service in Manchester (UK).
 
-![tramDiagram](https://user-images.githubusercontent.com/46089773/69906438-39567180-13bb-11ea-8617-195f0afa382c.png)
+![tramDiagram](https://user-images.githubusercontent.com/46089773/69906456-89cdcf00-13bb-11ea-824a-895642002d71.png)
 
 From the above diagram, we can deduce that `Ladywell` was the last position TRAM-ABC had left off at based on the time intervals. By identifying each tram within the Metrolink network, we are able to quickly traverse the whole network and determine what trams are where. Furthermore, a restriction by the API to only provide the next 3 trams coming up can be circumvented by knowing what the next 3 trams for the previous station are (and so on and so forth).
  
