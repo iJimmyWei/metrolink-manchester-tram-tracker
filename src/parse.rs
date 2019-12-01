@@ -1,13 +1,13 @@
 use uuid::Uuid;
 use crate::api::ResponseDto;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub enum Direction {
     Incoming,
     Outgoing,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Carriages {
     Single,
     Double,
