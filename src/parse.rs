@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use crate::api::ResponseDto;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Direction {
     Incoming,
     Outgoing,
@@ -13,14 +13,14 @@ pub enum Carriages {
     Double,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Status {
     Departing,
     Arriving,
     Due,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TrainData {
     pub destination: String,
     pub carriages: Carriages,
@@ -28,7 +28,7 @@ pub struct TrainData {
     pub estimated_wait_time: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StationData {
     pub id: i32,
     pub line: String,
