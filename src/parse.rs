@@ -1,6 +1,7 @@
+use uuid::Uuid;
 use crate::api::ResponseDto;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Direction {
     Incoming,
     Outgoing,
@@ -25,6 +26,7 @@ pub struct TrainData {
     pub carriages: Carriages,
     pub status: Status,
     pub estimated_wait_time: i32,
+    pub train_id: Option<Uuid>,
 }
 
 #[derive(Debug)]
@@ -63,6 +65,7 @@ pub fn parse(response: ResponseDto) -> Vec<StationData> {
                     "Double" => Carriages::Double,
                     _ => Carriages::Single,
                 },
+                train_id: None,
             })
         }
 
@@ -79,6 +82,7 @@ pub fn parse(response: ResponseDto) -> Vec<StationData> {
                     "Double" => Carriages::Double,
                     _ => Carriages::Single,
                 },
+                train_id: None,
             })
         }
 
@@ -95,6 +99,7 @@ pub fn parse(response: ResponseDto) -> Vec<StationData> {
                     "Double" => Carriages::Double,
                     _ => Carriages::Single,
                 },
+                train_id: None,
             })
         }
 
@@ -111,6 +116,7 @@ pub fn parse(response: ResponseDto) -> Vec<StationData> {
                         "Double" => Carriages::Double,
                         _ => Carriages::Single,
                     },
+                    train_id: None,
             })
         }
 
