@@ -1,10 +1,11 @@
 mod api;
 mod parse;
+mod logic;
 use uuid::Uuid;
 extern crate reqwest;
 
 fn lookup_previous_station<'a>(
-    line_stations: &[&'static str; 4],
+    line_stations: &[&'static str; 5],
     data: &'a Vec<parse::StationData>,
     current_station: &parse::StationData,
 ) -> Option<&'a parse::StationData> {
@@ -58,7 +59,7 @@ fn main() {
             // Parse the response to something we can use
             let mut data = parse::parse(response);
 
-            let eccles_line_stations: [&'static str; 4] = ["Eccles", "Ladywell", "Weaste", "Langworthy"];
+            let eccles_line_stations: [&'static str; 5] = ["Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway"];
             let trams_in_existence: Vec<Uuid> = Vec::new(); // holds all trams in existence using our own generated tram ids
             
             // Loop through the data to get all train data
@@ -74,58 +75,13 @@ fn main() {
 
                         match previous_station {
                             Some(previous_station) => {
-                                let mut matched_prev_station_train_indexes: Vec<usize> = Vec::new();
-
-                                // Compare each train and match them appropriately (using same dest, carriage etc.. basically same tram meta data)
-                                for current_train in current_station.train_data.iter() {
-                                    println!("current st train: {:#?} {:#?}", current_station.location, current_train);
-                                    
-                                    println!("prev station train possibilities\n--------");
-                                    for (i, prev_train) in previous_station.train_data.iter().enumerate() {
-                                        println!("prev st train: {:#?}", prev_train);
-
-                                        // Ensure train meta data matches
-                                        if (!is_end_of_circuit && current_train.destination != prev_train.destination)
-                                            || current_train.carriages != prev_train.carriages
-                                        {
-                                            println!("train meta data doesn't match, skipping to next train");
-                                            continue;
-                                        }
-
-                                        if matched_prev_station_train_indexes.contains(&i) {
-                                            println!("match already found for this train, skipping to next train");
-                                            continue;
-                                        }
-
-                                        matched_prev_station_train_indexes.push(i);
-
-                                        // Is the tram here inbetween these 2 stations?
-                                        if current_train.estimated_wait_time < previous_station.train_data[i].estimated_wait_time {
-                                            println!("there is a train between {} and {} heading towards {}", current_station.location, previous_station.location, current_train.destination);
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                    println!("-----------------------eo train poss");
-                                }
-                                
-
-                                // // Get immediate previous station data, if wait time is of that is less than this, then the train is between these 2 stations
-                                // if current_station.train_data[0].estimated_wait_time < previous_station.train_data[0].estimated_wait_time {
-                                //     println!("there is a train between {} -> {} heading to the {} direction", previous_station.location, current_station.location, current_station.train_data.get(0).unwrap().destination);
-                                // }
-
-                                        
-                                // println!("{:#?} prev ", previous_station);
-                                println!("------------------ ");
+                                logic::get_trams_between_stations(&current_station, &previous_station);
+                                // println!("-----------------------eo train poss")
                             },
                             None => {
                                 // println!("No more stations")
                             }
                         }
-
-                        // lookup_previous_station(&line_stations, data, next_station_data, next_station_lookup_direction);
-
                     }
                     
                 }

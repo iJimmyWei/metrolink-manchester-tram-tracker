@@ -11,3 +11,7 @@ reqwest = "0.9.22"
 futures = "0.3"
 serde = "1.0.103"
 uuid = { version = "0.8", features = ["v4"] }
+
+[lib]
+name = "metrolib"
+path = "src/lib.rs"
