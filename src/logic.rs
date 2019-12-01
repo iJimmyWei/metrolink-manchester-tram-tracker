@@ -54,9 +54,9 @@ pub fn get_trams_between_stations(
                     trams_between_station.push(
                         current_train.clone()
                     );
-                } else {
-                    break;
                 }
+
+                break;
             }
 
             // We ran out of trams.. probably was night time and no more to come
