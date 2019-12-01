@@ -1,17 +1,16 @@
 mod api;
 mod parse;
 mod logic;
-use uuid::Uuid;
 extern crate reqwest;
 
 fn lookup_previous_station<'a>(
-    line_stations: &[&'static str; 5],
+    line_stations: &[&'static str; 9],
     data: &'a Vec<parse::StationData>,
     current_station: &parse::StationData,
 ) -> Option<&'a parse::StationData> {
 
     let current_station_index = line_stations.iter().position(|&r| r == current_station.location).unwrap();
-    let next_station_lookup_direction;
+    let mut next_station_lookup_direction;
 
     // Logic to determine which direction of that platform we need to look at
     // End of station circuit, flip direction so we can continue traversing the stations
@@ -40,6 +39,11 @@ fn lookup_previous_station<'a>(
     match next_station_lookup_name {
         // Select the train data with the given station name
         Some(name) => {
+            // Some stations only go "outwards"
+            if *name == "MediaCityUK" {
+                next_station_lookup_direction = parse::Direction::Outgoing
+            };
+
             let next_station_data = data.iter().find(
                 |&d| d.location == *name && d.direction == next_station_lookup_direction
             ).unwrap();
@@ -57,26 +61,28 @@ fn main() {
     match res {
         Ok(response) => {
             // Parse the response to something we can use
-            let mut data = parse::parse(response);
+            let data = parse::parse(response);
 
-            let eccles_line_stations: [&'static str; 5] = ["Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway"];
-            let trams_in_existence: Vec<Uuid> = Vec::new(); // holds all trams in existence using our own generated tram ids
+            let eccles_line_stations: [&'static str; 9] = ["Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway", "MediaCityUK", "Harbour City", "Anchorage", "Exchange Quay"];
             
             // Loop through the data to get all train data
             for current_station in data.iter() {
                 if eccles_line_stations.contains(&&*current_station.location) {
-                    let is_end_of_circuit = (eccles_line_stations.iter().position(|&r| r == current_station.location).unwrap()) == 0;
+                    // let is_end_of_circuit = (eccles_line_stations.iter().position(|&r| r == current_station.location).unwrap()) == 0;
 
-                    // Backtrace to find the trams current position, while backtracing remove that tram
-                    let uuid = Uuid::new_v4();
+                    // // Backtrace to find the trams current position, while backtracing remove that tram
+                    // let uuid = Uuid::new_v4();
 
                     if current_station.train_data.len() != 0 {
                         let previous_station = lookup_previous_station(&eccles_line_stations, &data, &current_station);
 
                         match previous_station {
                             Some(previous_station) => {
-                                logic::get_trams_between_stations(&current_station, &previous_station);
-                                // println!("-----------------------eo train poss")
+                                let trams = logic::get_trams_between_stations(&current_station, &previous_station);
+                                match trams {
+                                    Some(trams) => println!("{:#?}", trams),
+                                    _ => {}
+                                }
                             },
                             None => {
                                 // println!("No more stations")

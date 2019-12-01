@@ -6,13 +6,13 @@ pub fn get_trams_between_stations(
     previous_station: &parse::StationData
 ) -> Option<Vec<parse::TrainData>> {
     let mut trams_between_station: Vec<parse::TrainData> = Vec::new();
-    let mut matched_prev_station_train_indexes: Vec<usize> = Vec::new();
+    let matched_prev_station_train_indexes: Vec<usize> = Vec::new();
 
     let mut last_search_was_skipped = false;
 
     // Compare each train and match them appropriately (using same dest, carriage etc.. basically same tram meta data)
     for current_train in current_station.train_data.iter() {
-        println!("current st train: {:#?} {:#?} {:#?}, prev stat data: {:#?}", current_station.location, current_station.direction, current_train, previous_station);
+        // println!("current st train: {:#?} {:#?} {:#?}, prev stat data: {:#?}", current_station.location, current_station.direction, current_train, previous_station);
         
         // No trams found at previous station..
         // 2 possibilities
@@ -27,7 +27,7 @@ pub fn get_trams_between_stations(
             // println!("prev station train possibilities\n--------");
             for (i, prev_train) in previous_station.train_data.iter().enumerate() {
                 last_search_was_skipped = false;
-                println!("prev st train: {:#?}", prev_train);
+                // println!("prev st train: {:#?}", prev_train);
 
                 // Ensure train meta data matches
                 // if !is_end_of_circuit &&
@@ -46,11 +46,11 @@ pub fn get_trams_between_stations(
                     continue;
                 }
 
-                matched_prev_station_train_indexes.push(i);
-
                 // Is the tram here inbetween these 2 stations?
-                if current_train.estimated_wait_time < previous_station.train_data[i].estimated_wait_time {
-                    println!("there is a train between {} and {} heading towards {}", current_station.location, previous_station.location, current_train.destination);
+                if current_train.estimated_wait_time < prev_train.estimated_wait_time {
+                    println!("there is a train between {} and {} with times {} and {} heading towards {}",
+                        current_station.location, previous_station.location,
+                        current_train.estimated_wait_time, prev_train.estimated_wait_time, current_train.destination);
                     trams_between_station.push(
                         current_train.clone()
                     );

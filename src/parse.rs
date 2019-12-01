@@ -1,4 +1,3 @@
-use uuid::Uuid;
 use crate::api::ResponseDto;
 
 #[derive(Debug, PartialEq, Clone)]
