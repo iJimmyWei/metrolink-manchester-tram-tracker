@@ -4,17 +4,16 @@ mod logic;
 extern crate reqwest;
 
 fn lookup_previous_station<'a>(
-    line_stations: &[&'static str; 9],
+    line_stations: &[&'static str; 27],
     data: &'a Vec<parse::StationData>,
     current_station: &parse::StationData,
 ) -> Option<&'a parse::StationData> {
-
     let current_station_index = line_stations.iter().position(|&r| r == current_station.location).unwrap();
     let mut next_station_lookup_direction;
-
+    
     // Logic to determine which direction of that platform we need to look at
     // End of station circuit, flip direction so we can continue traversing the stations
-    if current_station_index == 0 {
+    if current_station_index == 0 || current_station_index == 26 {
         if current_station.direction == parse::Direction::Incoming {
             next_station_lookup_direction = parse::Direction::Outgoing;
         } else {
@@ -40,7 +39,7 @@ fn lookup_previous_station<'a>(
         // Select the train data with the given station name
         Some(name) => {
             // Some stations only go "outwards"
-            if *name == "MediaCityUK" {
+            if *name == "MediaCityUK" || *name == "Ashton-Under-Lyne" {
                 next_station_lookup_direction = parse::Direction::Outgoing
             };
 
@@ -63,7 +62,14 @@ fn main() {
             // Parse the response to something we can use
             let data = parse::parse(response);
 
-            let eccles_line_stations: [&'static str; 9] = ["Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway", "MediaCityUK", "Harbour City", "Anchorage", "Exchange Quay"];
+            let eccles_line_stations: [&'static str; 27] = [
+                "Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway",
+                "MediaCityUK", "Harbour City", "Anchorage", "Exchange Quay",
+                "Pomona", "Cornbrook", "Deansgate - Castlefield", "St Peter's Square",
+                "Piccadilly Gardens", "Piccadilly", "New Islington", "Holt Town",
+                "Etihad Campus", "Velopark", "Clayton Hall", "Edge Lane",
+                "Cemetery Road", "Droylsden", "Audenshaw", "Ashton Moss",
+                "Ashton West", "Ashton-Under-Lyne"];
             
             // Loop through the data to get all train data
             for current_station in data.iter() {

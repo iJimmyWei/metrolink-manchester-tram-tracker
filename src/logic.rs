@@ -35,22 +35,28 @@ pub fn get_trams_between_stations(
                 //         && current_train.destination != prev_train.destination)
                 
                 //     // || current_train.carriages != prev_train.carriages
-                // {
-                //     println!("train meta data doesn't match, skipping to next train, {:#?} {:#?}", current_train.destination, prev_train.destination);
-                //     continue;
-                // }
+
+                if current_station.location != "Eccles" &&
+                current_train.destination != prev_train.destination
+                {
+                    if current_station.location != "MediaCityUK" && (current_train.destination != "Ashton-Under-Lyne" && prev_train.destination != "Ashton via MediaCityUK") {
+                        // println!("train meta data doesn't match, skipping to next train, {:#?} {:#?}", current_train.destination, prev_train.destination);
+                        continue;
+                    }
+                }
+                
 
                 if matched_prev_station_train_indexes.contains(&i) {
-                    println!("match already found for this train, skipping to next train");
+                    // println!("match already found for this train, skipping to next train");
                     last_search_was_skipped = true;
                     continue;
                 }
 
                 // Is the tram here inbetween these 2 stations?
                 if current_train.estimated_wait_time < prev_train.estimated_wait_time {
-                    println!("there is a train between {} and {} with times {} and {} heading towards {}",
+                    println!("there is a train between {:#?} and {:#?} with times {} and {} heading towards {} (prev t dest: {})",
                         current_station.location, previous_station.location,
-                        current_train.estimated_wait_time, prev_train.estimated_wait_time, current_train.destination);
+                        current_train.estimated_wait_time, prev_train.estimated_wait_time, current_train.destination, prev_train.destination);
                     trams_between_station.push(
                         current_train.clone()
                     );
