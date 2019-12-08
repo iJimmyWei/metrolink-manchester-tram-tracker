@@ -144,3 +144,34 @@ pub fn lookup_previous_station<'a>(
         _ => None
     }
 }
+
+pub fn locate_trams(response_data: Vec<parse::StationData>, line_stations: &[&'static str]) -> Vec<TramBetweenStation> {
+    let mut trams_between_stations: Vec<TramBetweenStation> = Vec::new();
+
+     // Loop through the data to get all train data
+     for station in response_data.iter() {
+        if line_stations.contains(&&*station.location) {
+            if station.train_data.len() != 0 {
+                let previous_station = lookup_previous_station(&line_stations, &response_data, &station);
+
+                match previous_station {
+                    Some(previous_station) => {
+                        let trams = get_trams_between_stations(&station, &previous_station);
+                        match trams {
+                            Some(trams) => {
+                                for tram in trams {
+                                    trams_between_stations.push(tram)
+                                }
+                            },
+                            _ => {} // No trams found
+                        }
+                    },
+                    _ => {} // No previous station (station sharing multiple lines)
+                }
+            }
+            
+        }
+    }
+
+    trams_between_stations
+}

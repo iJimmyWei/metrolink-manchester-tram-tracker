@@ -19,27 +19,9 @@ fn main() {
                 "Etihad Campus", "Velopark", "Clayton Hall", "Edge Lane",
                 "Cemetery Road", "Droylsden", "Audenshaw", "Ashton Moss",
                 "Ashton West", "Ashton-Under-Lyne"];
-            
-            // Loop through the data to get all train data
-            for station in response_data.iter() {
-                if eccles_line_stations.contains(&&*station.location) {
-                    if station.train_data.len() != 0 {
-                        let previous_station = logic::lookup_previous_station(&eccles_line_stations, &response_data, &station);
 
-                        match previous_station {
-                            Some(previous_station) => {
-                                let trams = logic::get_trams_between_stations(&station, &previous_station);
-                                match trams {
-                                    Some(trams) => println!("{:#?}", trams),
-                                    _ => {} // No trams found
-                                }
-                            },
-                            _ => {} // No previous station (station sharing multiple lines)
-                        }
-                    }
-                    
-                }
-            }
+            let trams_between_stations = logic::locate_trams(response_data, &eccles_line_stations);
+            println!("Trams!: {:#?}", trams_between_stations);
         },
         Err(err) => api::handler(err)
     }
