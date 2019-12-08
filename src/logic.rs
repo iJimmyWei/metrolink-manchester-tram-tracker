@@ -73,8 +73,6 @@ pub fn get_trams_between_stations(
                 );
             }
         }
-        
-        // println!("-----------------------eo train poss");
     }
     
     if trams_between_station.len() > 0 {
@@ -83,4 +81,55 @@ pub fn get_trams_between_stations(
         return None
     }
 
+}
+
+// Gets the previous station's data given a station within a line 
+pub fn lookup_previous_station<'a>(
+    line_stations: &[&'static str],
+    data: &'a Vec<parse::StationData>,
+    current_station: &parse::StationData,
+) -> Option<&'a parse::StationData> {
+    let current_station_index = line_stations.iter().position(|&r| r == current_station.location).unwrap();
+    let mut next_station_lookup_direction;
+    
+    // Logic to determine which direction of that platform we need to look at
+    // End of station circuit, flip direction so we can continue traversing the stations
+    if current_station_index == 0 || current_station_index == line_stations.len() {
+        if current_station.direction == parse::Direction::Incoming {
+            next_station_lookup_direction = parse::Direction::Outgoing;
+        } else {
+            next_station_lookup_direction = parse::Direction::Incoming;
+        }
+    } else {
+        // Defaults lookup to the direction of travel
+        match current_station.direction {
+            parse::Direction::Incoming => next_station_lookup_direction = parse::Direction::Incoming,
+            _ => next_station_lookup_direction = parse::Direction::Outgoing
+        }
+    }
+    
+    // Get station to lookup (always opposite of the direction)
+    let next_station_lookup_name: Option<&&str>;
+    if next_station_lookup_direction == parse::Direction::Incoming {
+        next_station_lookup_name = line_stations.get(current_station_index + 1);
+    } else {
+        next_station_lookup_name = line_stations.get(current_station_index - 1);
+    }
+
+    match next_station_lookup_name {
+        // Select the train data with the given station name
+        Some(name) => {
+            // Some stations only go "outwards"
+            if *name == "MediaCityUK" || *name == "Ashton-Under-Lyne" {
+                next_station_lookup_direction = parse::Direction::Outgoing
+            };
+
+            let next_station_data = data.iter().find(
+                |&d| d.location == *name && d.direction == next_station_lookup_direction
+            ).unwrap();
+
+            Some(next_station_data)
+        },
+        _ => None
+    }
 }
