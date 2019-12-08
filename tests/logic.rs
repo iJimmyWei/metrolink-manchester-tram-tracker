@@ -41,7 +41,16 @@ mod tests {
         };
 
         let is_tram_coming = metrolib::logic::get_trams_between_stations(&current_station, &previous_station);
-        let expected_res = current_station_train_data;
+        let mut expected_res: Vec<metrolib::logic::TramBetweenStation> = Vec::new();
+        
+        for tram_data in current_station_train_data.iter() {
+            expected_res.push(metrolib::logic::TramBetweenStation {
+                station_1: current_station.location.clone(),
+                station_2: previous_station.location.clone(),
+                metadata: tram_data.clone()
+            });
+        }
+       
         assert_eq!(is_tram_coming, Some(expected_res));
     }
 
@@ -66,7 +75,7 @@ mod tests {
             line: "Eccles".to_string(),
             train_data: vec![
                 metrolib::parse::TrainData {
-                    destination: "MediaCityUK".to_string(),
+                    destination: "Eccles".to_string(),
                     carriages: metrolib::parse::Carriages::Double,
                     status: metrolib::parse::Status::Arriving,
                     estimated_wait_time: 5,
@@ -76,7 +85,16 @@ mod tests {
         };
 
         let is_tram_coming = metrolib::logic::get_trams_between_stations(&current_station, &previous_station);
-        let expected_res = current_station_train_data;
+        let mut expected_res: Vec<metrolib::logic::TramBetweenStation> = Vec::new();
+        
+        for tram_data in current_station_train_data.iter() {
+            expected_res.push(metrolib::logic::TramBetweenStation {
+                station_1: current_station.location.clone(),
+                station_2: previous_station.location.clone(),
+                metadata: tram_data.clone()
+            });
+        }
+
         assert_eq!(is_tram_coming, Some(expected_res));
     }
 
@@ -107,7 +125,7 @@ mod tests {
             line: "Eccles".to_string(),
             train_data: vec![
                 metrolib::parse::TrainData {
-                    destination: "MediaCityUK".to_string(),
+                    destination: "Eccles".to_string(),
                     carriages: metrolib::parse::Carriages::Double,
                     status: metrolib::parse::Status::Arriving,
                     estimated_wait_time: 5,
@@ -117,7 +135,16 @@ mod tests {
         };
 
         let is_tram_coming = metrolib::logic::get_trams_between_stations(&current_station, &previous_station);
-        let expected_res = current_station_train_data;
+        let mut expected_res: Vec<metrolib::logic::TramBetweenStation> = Vec::new();
+        
+        for tram_data in current_station_train_data.iter() {
+            expected_res.push(metrolib::logic::TramBetweenStation {
+                station_1: current_station.location.clone(),
+                station_2: previous_station.location.clone(),
+                metadata: tram_data.clone()
+            });
+        }
+       
         assert_eq!(is_tram_coming, Some(expected_res));
     }
 
@@ -164,7 +191,16 @@ mod tests {
         };
 
         let is_tram_coming = metrolib::logic::get_trams_between_stations(&current_station, &previous_station);
-        let expected_res = current_station_train_data;
+        let mut expected_res: Vec<metrolib::logic::TramBetweenStation> = Vec::new();
+        
+        for tram_data in current_station_train_data.iter() {
+            expected_res.push(metrolib::logic::TramBetweenStation {
+                station_1: current_station.location.clone(),
+                station_2: previous_station.location.clone(),
+                metadata: tram_data.clone()
+            });
+        }
+       
         assert_eq!(is_tram_coming, Some(expected_res));
     }
 
@@ -201,7 +237,7 @@ mod tests {
             line: "Eccles".to_string(),
             train_data: vec![
                 metrolib::parse::TrainData {
-                    destination: "MediaCityUK".to_string(),
+                    destination: "Eccles".to_string(),
                     carriages: metrolib::parse::Carriages::Double,
                     status: metrolib::parse::Status::Arriving,
                     estimated_wait_time: 5,
@@ -211,7 +247,16 @@ mod tests {
         };
 
         let is_tram_coming = metrolib::logic::get_trams_between_stations(&current_station, &previous_station);
-        let expected_res = current_station_train_data;
+        let mut expected_res: Vec<metrolib::logic::TramBetweenStation> = Vec::new();
+        
+        for tram_data in current_station_train_data.iter() {
+            expected_res.push(metrolib::logic::TramBetweenStation {
+                station_1: current_station.location.clone(),
+                station_2: previous_station.location.clone(),
+                metadata: tram_data.clone()
+            });
+        }
+       
         assert_eq!(is_tram_coming, Some(expected_res));
     }
 
@@ -316,12 +361,14 @@ mod tests {
             ..setup_station()
         };
 
-        let expected_res = vec![metrolib::parse::TrainData {
-            destination: "Eccles".to_string(),
-            carriages: metrolib::parse::Carriages::Double,
-            status: metrolib::parse::Status::Arriving,
-            estimated_wait_time: 2,
-        }];
+        let mut expected_res: Vec<metrolib::logic::TramBetweenStation> = Vec::new();
+        
+        expected_res.push(metrolib::logic::TramBetweenStation {
+            station_1: current_station.location.clone(),
+            station_2: previous_station.location.clone(),
+            metadata: current_station_train_data[0].clone()
+        });
+       
         let is_tram_coming = metrolib::logic::get_trams_between_stations(&current_station, &previous_station);
         assert_eq!(is_tram_coming, Some(expected_res));
     }

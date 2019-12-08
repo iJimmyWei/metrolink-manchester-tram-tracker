@@ -11,7 +11,6 @@ fn main() {
         Ok(response) => {
             // Parse the response to something we can use
             let response_data = parse::parse(response);
-
             let eccles_line_stations: [&'static str; 27] = [
                 "Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway",
                 "MediaCityUK", "Harbour City", "Anchorage", "Exchange Quay",
