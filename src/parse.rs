@@ -1,4 +1,5 @@
 use crate::api::ResponseDto;
+use serde::Serialize;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Direction {
@@ -6,20 +7,20 @@ pub enum Direction {
     Outgoing,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub enum Carriages {
     Single,
     Double,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Status {
     Departing,
     Arriving,
     Due,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct TrainData {
     pub destination: String,
     pub carriages: Carriages,

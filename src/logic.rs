@@ -1,6 +1,7 @@
 use crate::parse;
+use serde::Serialize;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Clone)]
 pub struct TramBetweenStation {
     pub station_1: String,
     pub station_2: String,
