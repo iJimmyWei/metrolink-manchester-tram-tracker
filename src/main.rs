@@ -7,13 +7,23 @@ use std::sync::{Arc, RwLock, Mutex};
 use std::time::Duration;
 
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct ResponseDto {
+    tram_count: usize,
+    trams: Vec<logic::TramBetweenStation>,
+}
 
 fn trams(data: web::Data<Arc<Mutex<Vec<logic::TramBetweenStation>>>>) -> impl Responder {
     let guard = &**data;
     let json = guard.lock().unwrap();
     let body = &*json;
     // println!("actix_data: {:?}", );
-    HttpResponse::Ok().json(body)
+    HttpResponse::Ok().json(ResponseDto {
+        tram_count: body.len(),
+        trams: body.clone()
+    })
 }
 
 fn main() {
