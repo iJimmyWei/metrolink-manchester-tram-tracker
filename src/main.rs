@@ -3,7 +3,7 @@ mod parse;
 mod logic;
 extern crate reqwest;
 use std::thread;
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
@@ -29,13 +29,13 @@ fn trams(data: web::Data<Arc<Mutex<Vec<logic::TramBetweenStation>>>>) -> impl Re
 fn main() {
     let global_data: Mutex<Vec<logic::TramBetweenStation>> = Mutex::new(Vec::new());
     let arc = Arc::new(global_data);
-    let arc2 = arc.clone();
+    // let arc2 = arc.clone();
 
     // Metrolink data fetching & parsing thread
     thread::spawn(move || {
-        let client = reqwest::Client::new();
         loop {
-            let res = api::get(&client);
+            let client = reqwest::Client::new();
+            let res = api::get(client);
             println!("New data loaded!");
             
             match res {
@@ -72,20 +72,20 @@ fn main() {
     });
 
     // Web API
-    HttpServer::new(move || {
-        App::new()
-            // Store `MyData` in application storage.
-            .data(arc2.clone())
-            .service(
-                web::resource("/").route(
-                    web::get().to(trams)
-                )
-            )
-    })
-    .bind("127.0.0.1:8000")
-    .expect("Can not bind to port 8000")
-    .run()
-    .unwrap();
+    // HttpServer::new(move || {
+    //     App::new()
+    //         // Store `MyData` in application storage.
+    //         .data(arc2.clone())
+    //         .service(
+    //             web::resource("/").route(
+    //                 web::get().to(trams)
+    //             )
+    //         )
+    // })
+    // .bind("127.0.0.1:8000")
+    // .expect("Can not bind to port 8000")
+    // .run()
+    // .unwrap();
 
     thread::park();
 }

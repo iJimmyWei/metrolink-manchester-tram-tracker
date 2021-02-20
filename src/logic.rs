@@ -5,7 +5,7 @@ use serde::Serialize;
 pub struct TramBetweenStation {
     pub station_1: String,
     pub station_2: String,
-    pub metadata: parse::TrainData,
+    pub metadata: parse::Tram,
 }
 
 // Returns a string of destination names if exists
@@ -18,14 +18,14 @@ pub fn get_trams_between_stations(
     let mut last_search_was_skipped = false;
 
     // Compare each train and match them appropriately (using same dest, carriage etc.. basically same tram meta data)
-    for current_train in current_station.train_data.iter() {
+    for current_train in current_station.approaching_trams.iter() {
         // println!("current st train: {:#?} {:#?} {:#?}, prev stat data: {:#?}", current_station.location, current_station.direction, current_train, previous_station);
         
         // No trams found at previous station..
         // 2 possibilities
         // -- trams are backed up to the previous stations station
         // -- night time, no more trams (most likely)
-        if previous_station.train_data.len() == 0 {
+        if previous_station.approaching_trams.len() == 0 {
             trams.push(TramBetweenStation {
                 station_1: current_station.location.clone(),
                 station_2: previous_station.location.clone(),
@@ -34,7 +34,7 @@ pub fn get_trams_between_stations(
             break;
         } else {
             // println!("prev station train possibilities\n--------");
-            for (i, prev_train) in previous_station.train_data.iter().enumerate() {
+            for (i, prev_train) in previous_station.approaching_trams.iter().enumerate() {
                 last_search_was_skipped = false;
                 // println!("prev st train: {:#?}", prev_train);
 
@@ -152,7 +152,7 @@ pub fn locate_trams(response_data: Vec<parse::StationData>, line_stations: &[&'s
      // Loop through the data to get all train data
      for station in response_data.iter() {
         if line_stations.contains(&&*station.location) {
-            if station.train_data.len() != 0 {
+            if station.approaching_trams.len() != 0 {
                 let previous_station = lookup_previous_station(&line_stations, &response_data, &station);
 
                 match previous_station {
