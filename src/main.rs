@@ -2,6 +2,7 @@ mod api;
 mod parse;
 mod logic;
 extern crate reqwest;
+use crate::logic::Line;
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -12,10 +13,10 @@ use serde::Serialize;
 #[derive(Serialize)]
 struct ResponseDto {
     tram_count: usize,
-    trams: Vec<logic::TramBetweenStation>,
+    trams: Vec<logic::Tram>,
 }
 
-fn trams(data: web::Data<Arc<Mutex<Vec<logic::TramBetweenStation>>>>) -> impl Responder {
+fn trams(data: web::Data<Arc<Mutex<Vec<logic::Tram>>>>) -> impl Responder {
     let guard = &**data;
     let json = guard.lock().unwrap();
     let body = &*json;
@@ -26,10 +27,26 @@ fn trams(data: web::Data<Arc<Mutex<Vec<logic::TramBetweenStation>>>>) -> impl Re
     })
 }
 
+macro_rules! vec_of_strings {
+    ($($x:expr),*) => (vec![$($x.to_string()),*]);
+}
+
 fn main() {
-    let global_data: Mutex<Vec<logic::TramBetweenStation>> = Mutex::new(Vec::new());
+    let global_data: Mutex<Vec<logic::Tram>> = Mutex::new(Vec::new());
     let arc = Arc::new(global_data);
     // let arc2 = arc.clone();
+
+    let eccles_line = Line {
+        stations: vec_of_strings![
+            "Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway",
+            "MediaCityUK", "Harbour City", "Anchorage", "Exchange Quay",
+            "Pomona", "Cornbrook", "Deansgate - Castlefield", "St Peter's Square",
+            "Piccadilly Gardens", "Piccadilly", "New Islington", "Holt Town",
+            "Etihad Campus", "Velopark", "Clayton Hall", "Edge Lane",
+            "Cemetery Road", "Droylsden", "Audenshaw", "Ashton Moss",
+            "Ashton West", "Ashton-Under-Lyne"
+        ]
+    };
 
     // Metrolink data fetching & parsing thread
     thread::spawn(move || {
@@ -40,32 +57,30 @@ fn main() {
             
             match res {
                 Ok(response) => {
-                    // Parse the response to something we can use
                     let response_data = parse::parse(response);
-                    let eccles_line_stations: [&'static str; 27] = [
-                        "Eccles", "Ladywell", "Weaste", "Langworthy", "Broadway",
-                        "MediaCityUK", "Harbour City", "Anchorage", "Exchange Quay",
-                        "Pomona", "Cornbrook", "Deansgate - Castlefield", "St Peter's Square",
-                        "Piccadilly Gardens", "Piccadilly", "New Islington", "Holt Town",
-                        "Etihad Campus", "Velopark", "Clayton Hall", "Edge Lane",
-                        "Cemetery Road", "Droylsden", "Audenshaw", "Ashton Moss",
-                        "Ashton West", "Ashton-Under-Lyne"];
-                        
-                        let mut trams_between_stations = logic::locate_trams(response_data, &eccles_line_stations);
-                        
-                        trams_between_stations.dedup();
-                        // println!("Trams Count: {:?} {:#?}", &trams_between_stations.len(), trams_between_stations);
 
-                        // Send to rx
-                        // tx.send(trams_between_stations).unwrap();
+                    
+                    // Filter only station data with the eccles line approaching trams
 
-                        let mut guard = arc.lock().unwrap();
-                        *guard = trams_between_stations;
+
+
+                    // println!("{:#?}", response_data);
                         
-                        // println!("{:#?}", global_data);
-                    },
-                    Err(err) => api::handler(err)
-                }
+                    let mut trams_between_stations = logic::locate_trams_for_line(response_data, &eccles_line);
+                    
+                    trams_between_stations.dedup();
+                    println!("Trams Count: {:?} {:#?}", &trams_between_stations.len(), trams_between_stations);
+
+                    // Send to rx
+                    // tx.send(trams_between_stations).unwrap();
+
+                    let mut guard = arc.lock().unwrap();
+                    *guard = trams_between_stations;
+                    
+                    // println!("{:#?}", global_data);
+                },
+                Err(err) => api::handler(err)
+            }
 
             thread::sleep(Duration::from_secs(5));
         }

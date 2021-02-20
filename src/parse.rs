@@ -21,7 +21,7 @@ pub enum Status {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct Tram {
+pub struct ApproachingTram {
     pub destination: String,
     pub carriages: Carriages,
     pub status: Status,
@@ -37,9 +37,67 @@ pub struct StationData {
     pub location: String,
     pub atco_code: String,
     pub direction: Direction,
-    pub approaching_trams: Vec<Tram>,
+    pub approaching_trams: Vec<ApproachingTram>,
     pub message_board: String,
     pub last_updated: String,
+}
+
+pub trait StationHelper {
+    fn get_previous_station<'a>(
+        &self,
+        all_station_data: &'a Vec<StationData>,
+        line_stations: &Vec<String>,
+    ) -> Option<&'a StationData>;
+}
+
+impl StationHelper for StationData {
+    fn get_previous_station<'a>(&
+        self,
+        all_station_data: &'a Vec<StationData>,
+        line_stations: &Vec<String>,
+    ) -> Option<&'a StationData> {
+        let current_station_index = line_stations.iter().position(|r| *r == self.location).unwrap();
+        let mut previous_station_direction;
+        
+        // End of station circuit, flip direction so we can continue traversing the stations
+        if current_station_index == 0 || current_station_index == line_stations.len() {
+            if self.direction == Direction::Incoming {
+                previous_station_direction = Direction::Outgoing;
+            } else {
+                previous_station_direction = Direction::Incoming;
+            }
+        } else {
+            // Defaults lookup to the direction of travel
+            match &self.direction {
+                Direction::Incoming => previous_station_direction = Direction::Incoming,
+                _ => previous_station_direction = Direction::Outgoing
+            }
+        }
+        
+        // Get station to lookup (always opposite of the direction)
+        let previous_station_name: Option<&String>;
+        if previous_station_direction == Direction::Incoming {
+            previous_station_name = line_stations.get(current_station_index + 1);
+        } else {
+            previous_station_name = line_stations.get(current_station_index - 1);
+        }
+
+        match previous_station_name {
+            Some(name) => {
+                // Some stations only go "outwards"
+                if *name == "MediaCityUK" || *name == "Ashton-Under-Lyne" {
+                    previous_station_direction = Direction::Outgoing
+                };
+
+                let next_station_data = all_station_data.iter().find(
+                    |&d| d.location == *name && d.direction == previous_station_direction
+                ).unwrap();
+
+                Some(next_station_data)
+            },
+            _ => None
+        }
+    }
 }
 
 fn parse_station_name_abbreviation(station_name_maybe_abbreviated: &str) -> String {
@@ -87,11 +145,11 @@ pub fn parse(response: ResponseDto) -> Vec<StationData> {
     let mut all_station_data: Vec<StationData> = Vec::new();
 
     for station in response.value {
-        let mut approaching_trams: Vec<Tram> = Vec::new();
+        let mut approaching_trams: Vec<ApproachingTram> = Vec::new();
 
         // All stations provide exactly 4 traindata objects
         if station.Dest0 != "" {
-            approaching_trams.push(Tram {
+            approaching_trams.push(ApproachingTram {
                 destination: parse_destination(None, &station.Dest0),
                 status: parse_status(&station.Status0),
                 estimated_wait_time: station.Wait0.parse::<i32>().unwrap(),
@@ -100,7 +158,7 @@ pub fn parse(response: ResponseDto) -> Vec<StationData> {
         }
 
         if station.Dest1 != "" {
-            approaching_trams.push(Tram {
+            approaching_trams.push(ApproachingTram {
                 destination: parse_destination(Some(&station.Dest0), &station.Dest1),
                 status: parse_status(&station.Status1),
                 estimated_wait_time: station.Wait1.parse::<i32>().unwrap(),
@@ -109,16 +167,16 @@ pub fn parse(response: ResponseDto) -> Vec<StationData> {
         }
 
         if station.Dest2 != "" {
-            approaching_trams.push(Tram {
+            approaching_trams.push(ApproachingTram {
                 destination: parse_destination(Some(&station.Dest1), &station.Dest2),
                 status: parse_status(&station.Status2),
                 estimated_wait_time: station.Wait2.parse::<i32>().unwrap(),
-                carriages:  parse_carriages(&station.Carriages2)
+                carriages: parse_carriages(&station.Carriages2)
             })
         }
 
         if station.Dest3 != "" {
-            approaching_trams.push(Tram {
+            approaching_trams.push(ApproachingTram {
                 destination: parse_destination(Some(&station.Dest2), &station.Dest3),
                 status: parse_status(&station.Status3),
                 estimated_wait_time: station.Wait3.parse::<i32>().unwrap(),
