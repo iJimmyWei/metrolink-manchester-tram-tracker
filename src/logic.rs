@@ -13,6 +13,25 @@ pub struct Line {
     pub stations: Vec<String>
 }
 
+trait LineHelper {
+    fn get_end_stations(&self) -> Vec<String>;
+}
+
+impl LineHelper for Line {
+    fn get_end_stations(&self) -> Vec<String> {
+        let first_station = self.stations.first().unwrap();
+        let last_station = self.stations.last().unwrap();
+
+        let mut stations = Vec::new();
+        stations.push(first_station.to_lowercase());
+        stations.push(last_station.to_lowercase());
+
+        assert_eq!(stations.len(), 2);
+
+        stations
+    }
+}
+
 // Takes the current station, and previous station
 // Returns back all trams in between these 2 stations
 // This is possible as the previous station has information on approaching trams to itself
@@ -115,9 +134,17 @@ pub fn locate_trams_for_line(
 
                         match trams {
                             Some(trams) => {
-                                for tram in trams {
-                                    trams_between_stations.push(tram)
-                                }
+                                let end_stations = line.get_end_stations();
+
+                                // Filter out the trams to only include ones for our line
+                                let trams_only_match_line = trams
+                                    .into_iter()
+                                    .filter(|d| end_stations.contains(
+                                        &d.metadata.destination.to_lowercase()
+                                    ))
+                                    .collect::<Vec<Tram>>();
+
+                                trams_between_stations.extend(trams_only_match_line)
                             },
                             _ => {} // No trams found
                         }

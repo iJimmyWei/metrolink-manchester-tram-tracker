@@ -82,6 +82,8 @@ impl StationHelper for StationData {
             previous_station_name = line_stations.get(current_station_index - 1);
         }
 
+        // TODO: factor in "via" mediacity
+
         match previous_station_name {
             Some(name) => {
                 // Some stations only go "outwards"

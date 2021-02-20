@@ -34,7 +34,7 @@ macro_rules! vec_of_strings {
 fn main() {
     let global_data: Mutex<Vec<logic::Tram>> = Mutex::new(Vec::new());
     let arc = Arc::new(global_data);
-    // let arc2 = arc.clone();
+    let arc2 = arc.clone();
 
     let eccles_line = Line {
         stations: vec_of_strings![
@@ -58,10 +58,12 @@ fn main() {
                 Ok(response) => {
                     let response_data = parse::parse(response);
                         
-                    let mut trams_between_stations = logic::locate_trams_for_line(response_data, &eccles_line);
-                    
+                    let mut trams_between_stations = logic::locate_trams_for_line(
+                        response_data,
+                        &eccles_line
+                    );
+
                     trams_between_stations.dedup();
-                    println!("Trams Count: {:?} {:#?}", &trams_between_stations.len(), trams_between_stations);
 
                     // Send to rx
                     // tx.send(trams_between_stations).unwrap();
@@ -79,20 +81,19 @@ fn main() {
     });
 
     // Web API
-    // HttpServer::new(move || {
-    //     App::new()
-    //         // Store `MyData` in application storage.
-    //         .data(arc2.clone())
-    //         .service(
-    //             web::resource("/").route(
-    //                 web::get().to(trams)
-    //             )
-    //         )
-    // })
-    // .bind("127.0.0.1:8000")
-    // .expect("Can not bind to port 8000")
-    // .run()
-    // .unwrap();
+    HttpServer::new(move || {
+        App::new()
+            .data(arc2.clone())
+            .service(
+                web::resource("/").route(
+                    web::get().to(trams)
+                )
+            )
+    })
+    .bind("127.0.0.1:8000")
+    .expect("Can not bind to port 8000")
+    .run()
+    .unwrap();
 
     thread::park();
 }
