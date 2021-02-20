@@ -424,4 +424,51 @@ mod tests {
         );
         assert_eq!(trams, None);
     }
+
+    #[test]
+    fn test_one_approaching_backlog_three_previous_approaching_expect_none() {
+        let current_station = metrolib::parse::StationData {
+            line: "Eccles".to_string(),
+            approaching_trams: vec![
+                metrolib::parse::ApproachingTram {
+                    destination: "MediaCityUK".to_string(),
+                    carriages: metrolib::parse::Carriages::Double,
+                    status: metrolib::parse::Status::Arriving,
+                    estimated_wait_time: 5,
+                }
+            ],
+            ..setup_station()
+        };
+
+        let previous_station = metrolib::parse::StationData {
+            line: "Eccles".to_string(),
+            approaching_trams: vec![
+                metrolib::parse::ApproachingTram {
+                    destination: "North Pole".to_string(),
+                    carriages: metrolib::parse::Carriages::Double,
+                    status: metrolib::parse::Status::Arriving,
+                    estimated_wait_time: 2,
+                },
+                metrolib::parse::ApproachingTram {
+                    destination: "North Pole".to_string(),
+                    carriages: metrolib::parse::Carriages::Double,
+                    status: metrolib::parse::Status::Arriving,
+                    estimated_wait_time: 5,
+                },
+                metrolib::parse::ApproachingTram {
+                    destination: "North Pole".to_string(),
+                    carriages: metrolib::parse::Carriages::Double,
+                    status: metrolib::parse::Status::Arriving,
+                    estimated_wait_time: 10,
+                }
+            ],
+            ..setup_station()
+        };
+
+        let trams = metrolib::logic::get_trams_between_current_and_previous_station(
+            &current_station,
+            &previous_station
+        );
+        assert_eq!(trams, None);
+    }
 }

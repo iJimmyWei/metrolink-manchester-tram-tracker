@@ -53,18 +53,10 @@ fn main() {
         loop {
             let client = reqwest::Client::new();
             let res = api::get(client);
-            println!("New data loaded!");
             
             match res {
                 Ok(response) => {
                     let response_data = parse::parse(response);
-
-                    
-                    // Filter only station data with the eccles line approaching trams
-
-
-
-                    // println!("{:#?}", response_data);
                         
                     let mut trams_between_stations = logic::locate_trams_for_line(response_data, &eccles_line);
                     

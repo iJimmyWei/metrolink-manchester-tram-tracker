@@ -20,86 +20,76 @@ pub fn get_trams_between_current_and_previous_station(
     current_station: &parse::StationData,
     previous_station: &parse::StationData
 ) -> Option<Vec<Tram>> {
-    let matched_prev_station_train_indexes: Vec<usize> = Vec::new();
     let mut trams: Vec<Tram> = Vec::new();
-    let mut last_search_was_skipped = false;
+    let mut previous_station_has_approaching_trams = true;
 
-    // Compare each train and match them appropriately (using same dest, carriage etc.. basically same tram meta data)
-    for current_train in current_station.approaching_trams.iter() {
-        // println!("current st train: {:#?} {:#?} {:#?}, prev stat data: {:#?}", current_station.location, current_station.direction, current_train, previous_station);
+    // Compare each train and match them appropriately
+    // (using same dest, carriage etc.. basically same tram meta data)
+    for current_tram in current_station.approaching_trams.iter() {
+        // println!("current st train: {:#?} {:#?} {:#?}, prev stat data: {:#?}", current_station.location, current_station.direction, current_tram, previous_station);
         
-        // No trams found at previous station..
+        // No approaching trams found at previous station
         // 2 possibilities
         // -- trams are backed up to the previous stations station
-        // -- night time, no more trams (most likely)
+        // -- night time, less trams in circulation
         if previous_station.approaching_trams.len() == 0 {
-            trams.push(Tram {
-                next_station: current_station.location.clone(),
-                previous_station: previous_station.location.clone(),
-                metadata: current_train.clone()
-            });
-            break;
-        } else {
-            // println!("prev station train possibilities\n--------");
-            for (i, prev_train) in previous_station.approaching_trams.iter().enumerate() {
-                last_search_was_skipped = false;
-                // println!("prev st train: {:#?}", prev_train);
+            previous_station_has_approaching_trams = false;
+        }
 
-                // Ensure train meta data matches
-                // if !is_end_of_circuit &&
-                //     (current_train.destination != "See Tram Front" && prev_train.destination != "See Tram Front"
-                //         && current_train.destination != prev_train.destination)
-                
-                //     // || current_train.carriages != prev_train.carriages
+        // println!("prev station train possibilities\n--------");
+        for (_index, previous_tram) in previous_station.approaching_trams.iter().enumerate() {
+            // println!("prev st train: {:#?}", prev_train);
 
-                if current_station.location != "Eccles" &&
-                current_train.destination != prev_train.destination
+            // Ensure train meta data matches
+            // if !is_end_of_circuit &&
+            //     (current_tram.destination != "See Tram Front" && prev_train.destination != "See Tram Front"
+            //         && current_tram.destination != prev_train.destination)
+            
+            //     // || current_tram.carriages != prev_train.carriages
+
+            if current_station.location != "Eccles" &&
+                current_tram.destination != previous_tram.destination {
+                if current_station.location != "MediaCityUK" &&
+                    (
+                        current_tram.destination != "Ashton-Under-Lyne" &&
+                        previous_tram.destination != "Ashton via MediaCityUK"
+                    )
                 {
-                    if current_station.location != "MediaCityUK" && (current_train.destination != "Ashton-Under-Lyne" && prev_train.destination != "Ashton via MediaCityUK") {
-                        // println!("train meta data doesn't match, skipping to next train, {:#?} {:#?}", current_train.destination, prev_train.destination);
-                        continue;
-                    }
-                }
-                
-
-                if matched_prev_station_train_indexes.contains(&i) {
-                    // println!("match already found for this train, skipping to next train");
-                    last_search_was_skipped = true;
+                    // println!("train meta data doesn't match, skipping to next train, {:#?} {:#?}", current_tram.destination, previous_tram.destination);
                     continue;
                 }
-
-                // Is the tram here inbetween these 2 stations?
-                if current_train.estimated_wait_time < prev_train.estimated_wait_time {
-                    // println!("there is a train between {:#?} and {:#?} with times {} and {} heading towards {} (prev t dest: {})",
-                    //     current_station.location, previous_station.location,
-                    //     current_train.estimated_wait_time, prev_train.estimated_wait_time, current_train.destination, prev_train.destination);
-                    trams.push(Tram {
-                        next_station: current_station.location.clone(),
-                        previous_station: previous_station.location.clone(),
-                        metadata: current_train.clone()
-                    });
-                }
-
-                break;
             }
-
-            // We ran out of trams.. probably was night time and no more to come
-            if last_search_was_skipped {
-                println!("ran out of trams here, likely it's night time");
+            
+            // Is the tram here inbetween these 2 stations?
+            if current_tram.estimated_wait_time < previous_tram.estimated_wait_time {
+                // println!("there is a train between {:#?} and {:#?} with times {} and {} heading towards {} (prev t dest: {})",
+                //     current_station.location, previous_station.location,
+                //     current_tram.estimated_wait_time, prev_train.estimated_wait_time, current_tram.destination, prev_train.destination);
                 trams.push(Tram {
                     next_station: current_station.location.clone(),
                     previous_station: previous_station.location.clone(),
-                    metadata: current_train.clone()
+                    metadata: current_tram.clone()
                 });
             }
+
+            break;
+        }
+
+        // We've got a tram coming, but no more detected from previous approaching ones
+        if !previous_station_has_approaching_trams {
+            trams.push(Tram {
+                next_station: current_station.location.clone(),
+                previous_station: previous_station.location.clone(),
+                metadata: current_tram.clone()
+            });
         }
     }
     
-    if trams.len() > 0 {
-        return Some(trams)
-    } else {
+    if trams.len() == 0 {
         return None
     }
+
+    return Some(trams)
 }
 
 pub fn locate_trams_for_line(
